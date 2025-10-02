@@ -36,10 +36,6 @@ func initDB() error {
 	}
 	return db.Ping()
 }
-func information(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "Все норм")
-}
 func GetCompanies(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	rows, err := db.Query("SELECT * FROM companies")
@@ -47,10 +43,7 @@ func GetCompanies(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	if !rows.Next() {
-		w.Write([]byte("{}"))
-		return
-	}
+	Companies := []Company{}
 	for rows.Next() {
 
 		Comp := Company{}
@@ -59,32 +52,45 @@ func GetCompanies(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 			continue
 		}
-		jsonData, err := json.Marshal(Comp)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Fprintln(w, string(jsonData))
+		Companies = append(Companies, Comp)
 	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(Companies)
 }
 
 func GetCompany(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Invalid company ID", http.StatusBadRequest)
+		return
 	}
 	row := db.QueryRow("SELECT * FROM companies where id=$1", id)
 	Comp := Company{}
 	err = row.Scan(&Comp.ID, &Comp.Name, &Comp.CreatedAt, &Comp.UpdatedAt)
-	if err == sql.ErrNoRows {
-		w.Write([]byte("{}"))
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	jsonData, err := json.Marshal(Comp)
-	if err != nil {
+	json.NewEncoder(w).Encode(Comp)
+}
+func CreateCompanies(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Status not allowed"})
+		return
+	}
+	var Comp Company
+	if err := json.NewDecoder(r.Body).Decode(&Comp); err != nil {
 		log.Fatal(err)
 	}
-	w.Write(jsonData)
+	defer r.Body.Close()
+	_, err := db.Exec("INSERT INTO companies (name, created_at, updated_at) Values ($1, Now(), Now())", Comp.Name)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(Comp)
 }
 func main() {
 	loadEnv()
@@ -92,8 +98,9 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	http.HandleFunc("/", information)
-	http.HandleFunc("/companies", GetCompanies)
-	http.HandleFunc("/companies/{id}", GetCompany)
-	http.ListenAndServe(":8082", nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /companies", GetCompanies)
+	mux.HandleFunc("GET /companies/{id}", GetCompany)
+	mux.HandleFunc("POST /companies", CreateCompanies)
+	http.ListenAndServe(":8082", mux)
 }
