@@ -92,7 +92,7 @@ func UpdateCompany(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	defer r.Body.Close()
-	result, err := db.Exec("UPDATE companies SET name = $1 WHERE id = $2", Comp.Name, id)
+	result, err := db.Exec("UPDATE companies SET name = $1, updated_at = Now() WHERE id = $2", Comp.Name, id)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
