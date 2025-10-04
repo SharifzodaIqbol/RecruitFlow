@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"recruitFlow/company"
+	"recruitFlow/posting"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -38,17 +39,29 @@ func main() {
 	mux.HandleFunc("GET /companies", func(w http.ResponseWriter, r *http.Request) {
 		company.GetCompanies(db, w, r)
 	})
-	mux.HandleFunc("GET /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /companies/{company_id}", func(w http.ResponseWriter, r *http.Request) {
 		company.GetCompany(db, w, r)
 	})
 	mux.HandleFunc("POST /companies", func(w http.ResponseWriter, r *http.Request) {
 		company.CreateCompanies(db, w, r)
 	})
-	mux.HandleFunc("PUT /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("PUT /companies/{company_id}", func(w http.ResponseWriter, r *http.Request) {
 		company.UpdateCompany(db, w, r)
 	})
-	mux.HandleFunc("DELETE /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("DELETE /companies/{company_id}", func(w http.ResponseWriter, r *http.Request) {
 		company.DeleteCompany(db, w, r)
+	})
+	mux.HandleFunc("POST /companies/jobs", func(w http.ResponseWriter, r *http.Request) {
+		posting.CreateJob(db, w, r)
+	})
+	mux.HandleFunc("GET /companies/{company_id}/jobs", func(w http.ResponseWriter, r *http.Request) {
+		posting.GetJobs(db, w, r)
+	})
+	mux.HandleFunc("PUT /companies/{company_id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
+		posting.UpdateJob(db, w, r)
+	})
+	mux.HandleFunc("DELETE /companies/{company_id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
+		posting.DeleteJob(db, w, r)
 	})
 	http.ListenAndServe(":8082", mux)
 }
