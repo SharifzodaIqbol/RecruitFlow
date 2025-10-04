@@ -18,6 +18,7 @@ type Company struct {
 func GetCompanies(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Status not allowed"})
 		return
 	}
 	rows, err := db.Query("SELECT * FROM companies")
@@ -43,7 +44,7 @@ func GetCompanies(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func GetCompany(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
+	idStr := r.PathValue("company_id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid company ID", http.StatusBadRequest)
@@ -79,9 +80,10 @@ func CreateCompanies(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func UpdateCompany(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Status not allowed"})
 		return
 	}
-	idStr := r.PathValue("id")
+	idStr := r.PathValue("company_id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		json.NewEncoder(w).Encode(err)
@@ -111,7 +113,7 @@ func DeleteCompany(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"err": "Status not allowed"})
 		return
 	}
-	idStr := r.PathValue("id")
+	idStr := r.PathValue("company_id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		json.NewEncoder(w).Encode(err)
