@@ -54,9 +54,11 @@ func GetCompany(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	Comp := Company{}
 	err = row.Scan(&Comp.ID, &Comp.Name, &Comp.CreatedAt, &Comp.UpdatedAt)
 	if err != nil {
+		http.Error(w, "Not Found", http.StatusNotFound)
 		log.Println(err)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(Comp)
 }
 func CreateCompanies(db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -116,7 +118,7 @@ func DeleteCompany(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("company_id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		json.NewEncoder(w).Encode(err)
+		http.Error(w, "Invalid id company", http.StatusBadRequest)
 		return
 	}
 	result, err := db.Exec("DELETE FROM companies where id = $1", id)
