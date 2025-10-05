@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"recruitFlow/candidate"
 	"recruitFlow/company"
 	"recruitFlow/posting"
 
@@ -62,6 +63,18 @@ func main() {
 	})
 	mux.HandleFunc("DELETE /companies/{company_id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
 		posting.DeleteJob(db, w, r)
+	})
+	mux.HandleFunc("POST /candidates", func(w http.ResponseWriter, r *http.Request) {
+		candidate.CreateCandidate(db, w, r)
+	})
+	mux.HandleFunc("GET /candidates", func(w http.ResponseWriter, r *http.Request) {
+		candidate.GetCandidates(db, w, r)
+	})
+	mux.HandleFunc("GET /candidates/{id}", func(w http.ResponseWriter, r *http.Request) {
+		candidate.GetCandidate(db, w, r)
+	})
+	mux.HandleFunc("DELETE /candidates/{id}", func(w http.ResponseWriter, r *http.Request) {
+		candidate.DeleteCandidate(db, w, r)
 	})
 	http.ListenAndServe(":8082", mux)
 }
