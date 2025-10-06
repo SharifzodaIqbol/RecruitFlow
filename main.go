@@ -8,6 +8,7 @@ import (
 	"os"
 	"recruitFlow/candidate"
 	"recruitFlow/company"
+	"recruitFlow/helper"
 	"recruitFlow/posting"
 
 	"github.com/joho/godotenv"
@@ -44,7 +45,7 @@ func main() {
 		company.GetCompany(db, w, r)
 	})
 	mux.HandleFunc("POST /companies", func(w http.ResponseWriter, r *http.Request) {
-		company.CreateCompanies(db, w, r)
+		helper.Create[helper.Company](db, w, r, "companies")
 	})
 	mux.HandleFunc("PUT /companies/{company_id}", func(w http.ResponseWriter, r *http.Request) {
 		company.UpdateCompany(db, w, r)
