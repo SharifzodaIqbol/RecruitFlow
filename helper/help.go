@@ -67,15 +67,12 @@ func Create[T any](db *sql.DB, w http.ResponseWriter, r *http.Request, tableName
 	parametrs = append(parametrs, "created_at", "updated_at")
 	placeholders = append(placeholders, fmt.Sprintf("$%d", counter+1), fmt.Sprintf("$%d", counter+2))
 	values = append(values, "NOW()", "NOW()")
-	fmt.Println(strings.Join(parametrs, ", "))
-	fmt.Println(strings.Join(placeholders, ", "))
 	query := fmt.Sprintf(
 		"INSERT INTO %s (%s) VALUES (%s)",
 		tableName,
 		strings.Join(parametrs, ", "),
 		strings.Join(placeholders, ", "),
 	)
-	fmt.Println(values...)
 	result, err := db.Exec(query, values...)
 	if err != nil {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
@@ -88,5 +85,33 @@ func Create[T any](db *sql.DB, w http.ResponseWriter, r *http.Request, tableName
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(item)
+}
+func Read[T any](db *sql.DB, w http.ResponseWriter, r *http.Request, tableName string) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Not allowed Method", http.StatusMethodNotAllowed)
+		return
+	}
+	query := fmt.Sprintf("SELECT * FROM %s", tableName)
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		return
+	}
+	results := make([]T, 0)
+	for rows.Next() {
+		currentItem := new(T)
+		v := reflect.ValueOf(currentItem).Elem()
+		numsFiled := v.NumField()
+		scanArgs := make([]interface{}, numsFiled)
+		for i := 0; i < numsFiled; i++ {
+			scanArgs[i] = v.Field(i).Addr().Interface()
+		}
+		if err := rows.Scan(scanArgs...); err != nil {
+			http.Error(w, "Error scanning row: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		results = append(results, *currentItem)
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(results)
 }
