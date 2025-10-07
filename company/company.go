@@ -61,24 +61,6 @@ func GetCompany(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(Comp)
 }
-func CreateCompanies(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Status not allowed"})
-		return
-	}
-	var Comp Company
-	if err := json.NewDecoder(r.Body).Decode(&Comp); err != nil {
-		log.Fatal(err)
-	}
-	defer r.Body.Close()
-	_, err := db.Exec("INSERT INTO companies (name, created_at, updated_at) Values ($1, Now(), Now())", Comp.Name)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-}
 func UpdateCompany(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		w.WriteHeader(http.StatusMethodNotAllowed)
