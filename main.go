@@ -39,7 +39,7 @@ func main() {
 	defer db.Close()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /companies", func(w http.ResponseWriter, r *http.Request) {
-		company.GetCompanies(db, w, r)
+		helper.Read[helper.Company](db, w, r, "companies")
 	})
 	mux.HandleFunc("GET /companies/{company_id}", func(w http.ResponseWriter, r *http.Request) {
 		company.GetCompany(db, w, r)
@@ -54,7 +54,7 @@ func main() {
 		company.DeleteCompany(db, w, r)
 	})
 	mux.HandleFunc("POST /companies/jobs", func(w http.ResponseWriter, r *http.Request) {
-		posting.CreateJob(db, w, r)
+		helper.Create[helper.Posting](db, w, r, "job_postings")
 	})
 	mux.HandleFunc("GET /companies/{company_id}/jobs", func(w http.ResponseWriter, r *http.Request) {
 		posting.GetJobs(db, w, r)
@@ -66,10 +66,10 @@ func main() {
 		posting.DeleteJob(db, w, r)
 	})
 	mux.HandleFunc("POST /candidates", func(w http.ResponseWriter, r *http.Request) {
-		candidate.CreateCandidate(db, w, r)
+		helper.Create[helper.Candidate](db, w, r, "candidate")
 	})
 	mux.HandleFunc("GET /candidates", func(w http.ResponseWriter, r *http.Request) {
-		candidate.GetCandidates(db, w, r)
+		helper.Read[helper.Candidate](db, w, r, "candidate")
 	})
 	mux.HandleFunc("GET /candidates/{id}", func(w http.ResponseWriter, r *http.Request) {
 		candidate.GetCandidate(db, w, r)
