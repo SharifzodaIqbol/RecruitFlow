@@ -17,33 +17,6 @@ type Candidate struct {
 	UpdatedAt string `json:"-"`
 }
 
-func CreateCandidate(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Not allowed Method", http.StatusMethodNotAllowed)
-		return
-	}
-	person := Candidate{}
-	if err := json.NewDecoder(r.Body).Decode(&person); err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		log.Println(err)
-		return
-	}
-	result, err := db.Exec(
-		"INSERT INTO candidate (name, tel_number, email, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW())",
-		person.Name, person.TelNumber, person.Email,
-	)
-	if err != nil {
-		http.Error(w, "Server Error", http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
-	rowAffected, _ := result.RowsAffected()
-	if rowAffected == 0 {
-		http.Error(w, "Not Found", http.StatusNotFound)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-}
 func GetCandidates(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
