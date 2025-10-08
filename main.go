@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"recruitFlow/candidate"
 	"recruitFlow/company"
 	"recruitFlow/helper"
 	"recruitFlow/posting"
@@ -41,28 +40,28 @@ func main() {
 	mux.HandleFunc("GET /companies", func(w http.ResponseWriter, r *http.Request) {
 		helper.Read[helper.Company](db, w, r, "companies")
 	})
-	mux.HandleFunc("GET /companies/{company_id}", func(w http.ResponseWriter, r *http.Request) {
-		company.GetCompany(db, w, r)
+	mux.HandleFunc("GET /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
+		helper.GetByID[helper.Company](db, w, r, "companies") //company.GetCompany(db, w, r)
 	})
 	mux.HandleFunc("POST /companies", func(w http.ResponseWriter, r *http.Request) {
 		helper.Create[helper.Company](db, w, r, "companies")
 	})
-	mux.HandleFunc("PUT /companies/{company_id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("PUT /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
 		company.UpdateCompany(db, w, r)
 	})
-	mux.HandleFunc("DELETE /companies/{company_id}", func(w http.ResponseWriter, r *http.Request) {
-		company.DeleteCompany(db, w, r)
+	mux.HandleFunc("DELETE /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
+		helper.Delete[helper.Company](db, w, r, "companies")
 	})
 	mux.HandleFunc("POST /companies/jobs", func(w http.ResponseWriter, r *http.Request) {
 		helper.Create[helper.Posting](db, w, r, "job_postings")
 	})
-	mux.HandleFunc("GET /companies/{company_id}/jobs", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /companies/{id}/jobs", func(w http.ResponseWriter, r *http.Request) {
 		posting.GetJobs(db, w, r)
 	})
-	mux.HandleFunc("PUT /companies/{company_id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("PUT /companies/{id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
 		posting.UpdateJob(db, w, r)
 	})
-	mux.HandleFunc("DELETE /companies/{company_id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("DELETE /companies/{id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
 		posting.DeleteJob(db, w, r)
 	})
 	mux.HandleFunc("POST /candidates", func(w http.ResponseWriter, r *http.Request) {
@@ -72,10 +71,10 @@ func main() {
 		helper.Read[helper.Candidate](db, w, r, "candidate")
 	})
 	mux.HandleFunc("GET /candidates/{id}", func(w http.ResponseWriter, r *http.Request) {
-		candidate.GetCandidate(db, w, r)
+		helper.GetByID[helper.Candidate](db, w, r, "candidate")
 	})
 	mux.HandleFunc("DELETE /candidates/{id}", func(w http.ResponseWriter, r *http.Request) {
-		candidate.DeleteCandidate(db, w, r)
+		helper.Delete[helper.Candidate](db, w, r, "candidate")
 	})
 	http.ListenAndServe(":8082", mux)
 }
