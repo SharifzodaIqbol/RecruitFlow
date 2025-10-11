@@ -1,4 +1,5 @@
-package helper
+// Package store содержит общие утилиты для работы с БД и HTTP.
+package store
 
 import (
 	"database/sql"
@@ -6,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func Create[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -30,22 +32,26 @@ func Read[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodGet)
 	var item T
 	query := fmt.Sprintf("SELECT * FROM %s", item.GetNameDB())
+	if _, ok := any(item).(*Posting); ok {
+		id := GetIDPath(w, r, "id")
+		query = fmt.Sprintf("SELECT * FROM %s WHERE id = %d", item.GetNameDB(), id)
+	}
 	rows, err := db.Query(query)
 	if err != nil {
 		MethodStatus(w, "Server Error", http.StatusInternalServerError, err)
 	}
 	defer rows.Close()
 
-	var result []interface{}
+	var result []Reflector
 
 	for rows.Next() {
-		var newItem T
-		err = rows.Scan(newItem.GetFields()...)
+		newItem := item.New()
+		err := rows.Scan(newItem.GetFields()...)
 		if err != nil {
 			log.Printf("Scan error (Пропустили строку): %v", err)
 			continue
 		}
-		result = append(result, newItem.GetValues()...)
+		result = append(result, newItem)
 	}
 	if err = rows.Err(); err != nil {
 		MethodStatus(w, "Server Error", http.StatusInternalServerError, err)
@@ -56,71 +62,57 @@ func Read[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 }
 func GetByID[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodGet)
-	id := GetIDPath(w, r, "id")
 	var item T
+	id := GetIDByTypeStruct(item, w, r)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", item.GetNameDB())
 	row := db.QueryRow(query, id)
-	err := row.Scan(item.GetValues()...)
+	newItem := item.New()
+	err := row.Scan(newItem.GetFields()...)
 	if err != nil {
 		MethodStatus(w, "Not Found", http.StatusNotFound, err)
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(item.GetValues())
+	json.NewEncoder(w).Encode(newItem)
 }
-func Delete[T any](db *sql.DB, w http.ResponseWriter, r *http.Request) {
+func Delete[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodDelete)
-	id := GetIDPath(w, r, "id")
 	var item T
-	var result sql.Result
-	var err error
-	switch any(item).(type) {
-	case Company:
-		result, err = db.Exec(`DELETE FROM companies WHERE id = $1`, id)
-		if err != nil {
-			MethodStatus(w, "Bad Request", http.StatusInternalServerError, err)
-		}
-	case Candidate:
-		result, err = db.Exec(`DELETE FROM candidate WHERE id = $1`, id)
-		if err != nil {
-			MethodStatus(w, "Bad Request", http.StatusInternalServerError, err)
-		}
-	case Posting:
-		id := GetIDPath(w, r, "job_id")
-		result, err = db.Exec(`DELETE FROM job_postings WHERE id = $1`, id)
-		if err != nil {
-			MethodStatus(w, "Bad Request", http.StatusInternalServerError, err)
-		}
+	id := GetIDByTypeStruct(item, w, r)
+	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1", item.GetNameDB())
+	result, err := db.Exec(query, id)
+	if err != nil {
+		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
 	}
 	Affected(w, result)
 	w.WriteHeader(http.StatusOK)
 }
-func Update[T any](db *sql.DB, w http.ResponseWriter, r *http.Request) {
+func Update[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodPut)
-	id := GetIDPath(w, r, "id")
 	var item T
+	id := GetIDByTypeStruct(item, w, r)
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
 	}
 	defer r.Body.Close()
-	switch any(item).(type) {
-	case Company:
-		company := any(item).(Company)
-		_, err := db.Exec(`UPDATE companies SET name = $1, updated_at = NOW() WHERE id = $2`, company.Name, id)
-		if err != nil {
-			MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+	param := strings.Split(item.GetParam(), ", ")
+	placeholder := strings.Split(item.GetPlaceholder(), ", ")
+	setParam := ""
+	n := len(param) - 1
+	for i := 0; i < n; i++ {
+		if param[i] == "created_at" || param[i] == "id" {
+			continue
 		}
-	case Candidate:
-		candidate := any(item).(Candidate)
-		_, err := db.Exec(`UPDATE candidate SET name = $1, tel_number = $2, email = $3, updated_at = NOW() WHERE id = $4`, candidate.Name, candidate.TelNumber, candidate.Email, id)
-		if err != nil {
-			MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
-		}
-	case Posting:
-		post := any(item).(Posting)
-		_, err := db.Exec(`UPDATE job_postings SET title = $1, description = $2, updated_at = NOW() WHERE company_id = $3`, post.Title, post.Description, id)
-		if err != nil {
-			MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
-		}
+		setParam += param[i] + " = " + placeholder[i] + ", "
 	}
+	setParam += param[n] + " = " + placeholder[n]
+	fmt.Println(item.GetNameDB(), setParam)
+	fmt.Println(id)
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = %d", item.GetNameDB(), setParam, id)
+	fmt.Println(query)
+	result, err := db.Exec(query, item.GetValues()...)
+	if err != nil {
+		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+	}
+	Affected(w, result)
 	w.WriteHeader(http.StatusOK)
 }

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"recruitFlow/helper"
+	"recruitFlow/pkg/store"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -35,47 +35,6 @@ func main() {
 	}
 	defer db.Close()
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /companies", func(w http.ResponseWriter, r *http.Request) {
-		helper.Read[helper.Company](db, w, r)
-	})
-	mux.HandleFunc("GET /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
-		helper.GetByID[helper.Company](db, w, r)
-	})
-	mux.HandleFunc("POST /companies", func(w http.ResponseWriter, r *http.Request) {
-		helper.Create[helper.Company](db, w, r)
-	})
-	mux.HandleFunc("PUT /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
-		helper.Update[helper.Company](db, w, r)
-	})
-	mux.HandleFunc("DELETE /companies/{id}", func(w http.ResponseWriter, r *http.Request) {
-		helper.Delete[helper.Company](db, w, r)
-	})
-	mux.HandleFunc("POST /companies/jobs", func(w http.ResponseWriter, r *http.Request) {
-		helper.Create[helper.Posting](db, w, r)
-	})
-	mux.HandleFunc("GET /companies/{id}/jobs", func(w http.ResponseWriter, r *http.Request) {
-		helper.Read[helper.Posting](db, w, r)
-	})
-	mux.HandleFunc("GET /companies/{id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
-		helper.GetByID[helper.Posting](db, w, r)
-	})
-	mux.HandleFunc("PUT /companies/{id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
-		helper.Update[helper.Posting](db, w, r)
-	})
-	mux.HandleFunc("DELETE /companies/{id}/jobs/{job_id}", func(w http.ResponseWriter, r *http.Request) {
-		helper.Delete[helper.Posting](db, w, r)
-	})
-	mux.HandleFunc("POST /candidates", func(w http.ResponseWriter, r *http.Request) {
-		helper.Create[helper.Candidate](db, w, r)
-	})
-	mux.HandleFunc("GET /candidates", func(w http.ResponseWriter, r *http.Request) {
-		helper.Read[helper.Candidate](db, w, r)
-	})
-	mux.HandleFunc("GET /candidates/{id}", func(w http.ResponseWriter, r *http.Request) {
-		helper.GetByID[helper.Candidate](db, w, r)
-	})
-	mux.HandleFunc("DELETE /candidates/{id}", func(w http.ResponseWriter, r *http.Request) {
-		helper.Delete[helper.Candidate](db, w, r)
-	})
+	store.SetupRoutes(mux, db)
 	http.ListenAndServe(":8082", mux)
 }
