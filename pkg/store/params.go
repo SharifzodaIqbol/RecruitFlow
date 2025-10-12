@@ -15,16 +15,18 @@ func MethodAllowed(w http.ResponseWriter, r *http.Request, MethodName string) {
 }
 func MethodStatus(w http.ResponseWriter, infoErr string, code int, err error) {
 	http.Error(w, infoErr, code)
-	log.Fatal(err)
 }
-func GetIDPath(w http.ResponseWriter, r *http.Request, nameID string) int {
+func GetIDPath(w http.ResponseWriter, r *http.Request, nameID string) (int, bool) {
 	idStr := r.PathValue(nameID)
+	if idStr == "" {
+		return 0, false
+	}
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid id", http.StatusBadRequest)
 		log.Fatal()
 	}
-	return id
+	return id, true
 }
 func Affected(w http.ResponseWriter, result sql.Result) {
 	affected, _ := result.RowsAffected()
@@ -32,11 +34,4 @@ func Affected(w http.ResponseWriter, result sql.Result) {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
-}
-func GetIDByTypeStruct(item any, w http.ResponseWriter, r *http.Request) int {
-	id := GetIDPath(w, r, "id")
-	if _, ok := any(item).(*Posting); ok {
-		id = GetIDPath(w, r, "job_id")
-	}
-	return id
 }
