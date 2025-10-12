@@ -26,7 +26,22 @@ type Candidate struct {
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }
-
+type Application struct {
+	ID          int       `json:"id"`
+	JobID       int       `json:"job_id"`
+	CandidateID int       `json:"candidate_id"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"-"`
+	UpdatedAt   time.Time `json:"-"`
+}
+type Interview struct {
+	ID            int       `json:"id"`
+	ApplicationID int       `json:"application_id"`
+	Date          time.Time `json:"date"`
+	Result        string    `json:"result"`
+	CreatedAt     time.Time `json:"-"`
+	UpdatedAt     time.Time `json:"-"`
+}
 type Reflector interface {
 	GetNameDB() string
 	GetParam() string
@@ -52,7 +67,7 @@ func (c *Company) New() Reflector {
 	return &Company{}
 }
 
-func (c *Candidate) GetNameDB() string { return "candidate" }
+func (c *Candidate) GetNameDB() string { return "candidates" }
 func (c *Candidate) GetParam() string {
 	return "name, tel_number, email, created_at, updated_at"
 }
@@ -94,4 +109,25 @@ func (p *Posting) GetFields() []interface{} {
 }
 func (p *Posting) New() Reflector {
 	return &Posting{}
+}
+func (a *Application) GetNameDB() string { return "applications" }
+func (a *Application) GetParam() string {
+	return "job_id, candidate_id, status, created_at, updated_at"
+}
+func (a *Application) GetPlaceholder() string { return "$1, $2, $3, NOW(), NOW()" }
+func (a *Application) GetValues() []interface{} {
+	return []interface{}{a.JobID, a.CandidateID, a.Status}
+}
+func (a *Application) GetFields() []interface{} {
+	return []interface{}{
+		&a.ID,
+		&a.JobID,
+		&a.CandidateID,
+		&a.Status,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+	}
+}
+func (a *Application) New() Reflector {
+	return &Application{}
 }
