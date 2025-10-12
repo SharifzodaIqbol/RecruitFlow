@@ -24,6 +24,7 @@ func Create[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	result, err := db.Exec(query, item.GetValues()...)
 	if err != nil {
 		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+		return
 	}
 	Affected(w, result)
 	w.WriteHeader(http.StatusOK)
@@ -32,13 +33,13 @@ func Read[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodGet)
 	var item T
 	query := fmt.Sprintf("SELECT * FROM %s", item.GetNameDB())
-	if _, ok := any(item).(*Posting); ok {
-		id := GetIDPath(w, r, "id")
+	if id, ok := GetIDPath(w, r, "id"); ok {
 		query = fmt.Sprintf("SELECT * FROM %s WHERE id = %d", item.GetNameDB(), id)
 	}
 	rows, err := db.Query(query)
 	if err != nil {
 		MethodStatus(w, "Server Error", http.StatusInternalServerError, err)
+		return
 	}
 	defer rows.Close()
 
@@ -63,13 +64,14 @@ func Read[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func GetByID[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodGet)
 	var item T
-	id := GetIDByTypeStruct(item, w, r)
+	id, _ := GetIDPath(w, r, "id")
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", item.GetNameDB())
 	row := db.QueryRow(query, id)
 	newItem := item.New()
 	err := row.Scan(newItem.GetFields()...)
 	if err != nil {
 		MethodStatus(w, "Not Found", http.StatusNotFound, err)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(newItem)
@@ -77,11 +79,12 @@ func GetByID[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func Delete[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodDelete)
 	var item T
-	id := GetIDByTypeStruct(item, w, r)
+	id, _ := GetIDPath(w, r, "id")
 	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1", item.GetNameDB())
 	result, err := db.Exec(query, id)
 	if err != nil {
 		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+		return
 	}
 	Affected(w, result)
 	w.WriteHeader(http.StatusOK)
@@ -89,7 +92,7 @@ func Delete[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func Update[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodPut)
 	var item T
-	id := GetIDByTypeStruct(item, w, r)
+	id, _ := GetIDPath(w, r, "id")
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
 	}
@@ -105,13 +108,12 @@ func Update[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		setParam += param[i] + " = " + placeholder[i] + ", "
 	}
 	setParam += param[n] + " = " + placeholder[n]
-	fmt.Println(item.GetNameDB(), setParam)
-	fmt.Println(id)
 	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = %d", item.GetNameDB(), setParam, id)
 	fmt.Println(query)
 	result, err := db.Exec(query, item.GetValues()...)
 	if err != nil {
 		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+		return
 	}
 	Affected(w, result)
 	w.WriteHeader(http.StatusOK)
