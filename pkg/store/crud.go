@@ -14,6 +14,7 @@ func Create[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodPost)
 	var item T
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+		fmt.Println(item.GetValues()...)
 		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
 	}
 	defer r.Body.Close()

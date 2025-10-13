@@ -78,25 +78,25 @@ func SetupRoutes(mux *http.ServeMux, db *sql.DB) {
 		Read[*Application](db, w, r)
 	})
 	//Interviews
-	mux.HandleFunc("POST /applications", func(w http.ResponseWriter, r *http.Request) {
-		Create[*Application](db, w, r)
+	mux.HandleFunc("POST /interviews", func(w http.ResponseWriter, r *http.Request) {
+		Create[*Interview](db, w, r)
 	})
 	mux.HandleFunc("GET /interviews", func(w http.ResponseWriter, r *http.Request) {
-		Read[*Application](db, w, r)
+		Read[*Interview](db, w, r)
 	})
 	mux.HandleFunc("GET /interviews/{id}", func(w http.ResponseWriter, r *http.Request) {
-		GetByID[*Application](db, w, r)
+		GetByID[*Interview](db, w, r)
 	})
 	mux.HandleFunc("PUT /interviews/{id}", func(w http.ResponseWriter, r *http.Request) {
-		Update[*Application](db, w, r)
+		Update[*Interview](db, w, r)
 	})
 	mux.HandleFunc("DELETE /interviews/{id}", func(w http.ResponseWriter, r *http.Request) {
-		Delete[*Application](db, w, r)
+		Delete[*Interview](db, w, r)
 	})
 	mux.HandleFunc("GET /jobs/{id}/interviews", func(w http.ResponseWriter, r *http.Request) {
-		Read[*Application](db, w, r)
+		Read[*Interview](db, w, r)
 	})
 	mux.HandleFunc("GET /candidates/{id}/interviews", func(w http.ResponseWriter, r *http.Request) {
-		Read[*Application](db, w, r)
+		Read[*Interview](db, w, r)
 	})
 }

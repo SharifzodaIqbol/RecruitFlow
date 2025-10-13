@@ -131,3 +131,24 @@ func (a *Application) GetFields() []interface{} {
 func (a *Application) New() Reflector {
 	return &Application{}
 }
+func (i *Interview) GetNameDB() string { return "interviews" }
+func (i *Interview) GetParam() string {
+	return "application_id, date, result, created_at, updated_at"
+}
+func (i *Interview) GetPlaceholder() string { return "$1, $2, $3, NOW(), NOW()" }
+func (i *Interview) GetValues() []interface{} {
+	return []interface{}{i.ApplicationID, i.Date, i.Result}
+}
+func (i *Interview) GetFields() []interface{} {
+	return []interface{}{
+		&i.ID,
+		&i.ApplicationID,
+		&i.Date,
+		&i.Result,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	}
+}
+func (i *Interview) New() Reflector {
+	return &Interview{}
+}
