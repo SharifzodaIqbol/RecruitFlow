@@ -14,8 +14,8 @@ func Create[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodPost)
 	var item T
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
-		fmt.Println(item.GetValues()...)
-		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
 	}
 	defer r.Body.Close()
 	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
@@ -24,7 +24,7 @@ func Create[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		item.GetPlaceholder())
 	result, err := db.Exec(query, item.GetValues()...)
 	if err != nil {
-		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 	Affected(w, result)
@@ -39,7 +39,7 @@ func Read[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	rows, err := db.Query(query)
 	if err != nil {
-		MethodStatus(w, "Server Error", http.StatusInternalServerError, err)
+		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -56,7 +56,7 @@ func Read[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		result = append(result, newItem)
 	}
 	if err = rows.Err(); err != nil {
-		MethodStatus(w, "Server Error", http.StatusInternalServerError, err)
+		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -71,7 +71,7 @@ func GetByID[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	newItem := item.New()
 	err := row.Scan(newItem.GetFields()...)
 	if err != nil {
-		MethodStatus(w, "Not Found", http.StatusNotFound, err)
+		http.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -84,7 +84,7 @@ func Delete[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1", item.GetNameDB())
 	result, err := db.Exec(query, id)
 	if err != nil {
-		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 	Affected(w, result)
@@ -95,7 +95,7 @@ func Update[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	var item T
 	id, _ := GetIDPath(w, r, "id")
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
-		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 	}
 	defer r.Body.Close()
 	param := strings.Split(item.GetParam(), ", ")
@@ -113,7 +113,7 @@ func Update[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	fmt.Println(query)
 	result, err := db.Exec(query, item.GetValues()...)
 	if err != nil {
-		MethodStatus(w, "Bad Request", http.StatusBadRequest, err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 	Affected(w, result)
