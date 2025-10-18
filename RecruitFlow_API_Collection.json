@@ -1,0 +1,774 @@
+{
+	"info": {
+		"_postman_id": "89c5f891-b3b0-4f30-811c-d78440536773",
+		"name": "RecruitFlow Full API (CRUD)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SETUP: Create Initial Resources",
+			"description": "Создает Company, Candidate, и Posting для использования в последующих связанных тестах (Application, Interview).",
+			"item": [
+				{
+					"name": "1. POST Company (Setup)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Setup Company for Testing\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/companies",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"companies"
+							]
+						}
+					}
+				},
+				{
+					"name": "2. POST Candidate (Setup)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Candidate\",\n    \"tel_number\": \"+79001112233\",\n    \"email\": \"test.candidate@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/candidates",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"candidates"
+							]
+						}
+					}
+				},
+				{
+					"name": "3. POST Posting (Setup)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": {{company_id}},\n    \"title\": \"Setup Developer Job\",\n    \"description\": \"A generic setup job.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/postings",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"postings"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Companies (CRUD)",
+			"item": [
+				{
+					"name": "POST /companies",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New Company Ltd\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/companies",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"companies"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /companies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/companies",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"companies"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /companies/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/companies/{{company_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"companies",
+								"{{company_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "PUT /companies/:id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Company Name\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/companies/{{company_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"companies",
+								"{{company_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "DELETE /companies/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/companies/{{company_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"companies",
+								"{{company_id}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Candidates (CRUD)",
+			"item": [
+				{
+					"name": "POST /candidates",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"tel_number\": \"+79009998877\",\n    \"email\": \"test.user@mail.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/candidates",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"candidates"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /candidates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/candidates",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"candidates"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /candidates/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/candidates/{{candidate_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"candidates",
+								"{{candidate_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "PUT /candidates/:id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Candidate Name\",\n    \"tel_number\": \"+79009998877\",\n    \"email\": \"updated.email@mail.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/candidates/{{candidate_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"candidates",
+								"{{candidate_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "DELETE /candidates/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/candidates/{{candidate_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"candidates",
+								"{{candidate_id}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Postings (CRUD & Nested)",
+			"item": [
+				{
+					"name": "POST /postings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Posting created (200 OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": {{company_id}},\n    \"title\": \"Backend Developer\",\n    \"description\": \"Main job posting.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/postings",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"postings"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /postings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/postings",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"postings"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /companies/:id/jobs (Nested Read)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/companies/{{company_id}}/jobs",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"companies",
+								"{{company_id}}",
+								"jobs"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /postings/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/postings/{{posting_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"postings",
+								"{{posting_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "PUT /postings/:id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": {{company_id}},\n    \"title\": \"Updated Job Title\",\n    \"description\": \"Updated description.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/postings/{{posting_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"postings",
+								"{{posting_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "DELETE /postings/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/postings/{{posting_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"postings",
+								"{{posting_id}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Applications (CRUD & Nested)",
+			"item": [
+				{
+					"name": "POST /applications",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"job_id\": {{posting_id}},\n    \"candidate_id\": {{candidate_id}},\n    \"status\": \"Applied\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/applications",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"applications"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /applications",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/applications",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"applications"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /jobs/:id/applications (Nested Read by Job)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/jobs/{{posting_id}}/applications",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"jobs",
+								"{{posting_id}}",
+								"applications"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /candidates/:id/applications (Nested Read by Candidate)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/candidates/{{candidate_id}}/applications",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"candidates",
+								"{{candidate_id}}",
+								"applications"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /applications/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/applications/{{application_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"applications",
+								"{{application_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "PUT /applications/:id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"job_id\": {{posting_id}},\n    \"candidate_id\": {{candidate_id}},\n    \"status\": \"Interviewing\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/applications/{{application_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"applications",
+								"{{application_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "DELETE /applications/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/applications/{{application_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"applications",
+								"{{application_id}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Interviews (CRUD)",
+			"item": [
+				{
+					"name": "POST /interviews",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"application_id\": {{application_id}},\n    \"date\": \"2025-10-25T10:00:00Z\",\n    \"result\": \"Scheduled\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/interviews",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"interviews"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /interviews",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/interviews",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"interviews"
+							]
+						}
+					}
+				},
+				{
+					"name": "GET /interviews/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/interviews/{{interview_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"interviews",
+								"{{interview_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "PUT /interviews/:id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"application_id\": {{application_id}},\n    \"date\": \"2025-10-25T11:00:00Z\",\n    \"result\": \"Positive\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/interviews/{{interview_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"interviews",
+								"{{interview_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "DELETE /interviews/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/interviews/{{interview_id}}",
+							"host": [
+								"http://localhost:8082"
+							],
+							"path": [
+								"interviews",
+								"{{interview_id}}"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "company_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "candidate_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "posting_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "application_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "interview_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
