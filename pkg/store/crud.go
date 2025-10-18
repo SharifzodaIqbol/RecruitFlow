@@ -65,7 +65,10 @@ func Read[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func GetByID[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodGet)
 	var item T
-	id, _ := GetIDPath(w, r, "id")
+	id, ok := GetIDPath(w, r, "id")
+	if !ok {
+		return
+	}
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", item.GetNameDB())
 	row := db.QueryRow(query, id)
 	newItem := item.New()
@@ -80,7 +83,10 @@ func GetByID[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func Delete[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodDelete)
 	var item T
-	id, _ := GetIDPath(w, r, "id")
+	id, ok := GetIDPath(w, r, "id")
+	if !ok {
+		return
+	}
 	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1", item.GetNameDB())
 	result, err := db.Exec(query, id)
 	if err != nil {
@@ -93,7 +99,10 @@ func Delete[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func Update[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	MethodAllowed(w, r, http.MethodPut)
 	var item T
-	id, _ := GetIDPath(w, r, "id")
+	id, ok := GetIDPath(w, r, "id")
+	if !ok {
+		return
+	}
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 	}
@@ -101,14 +110,14 @@ func Update[T Reflector](db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	param := strings.Split(item.GetParam(), ", ")
 	placeholder := strings.Split(item.GetPlaceholder(), ", ")
 	setParam := ""
-	n := len(param) - 1
+	n := len(param)
 	for i := 0; i < n; i++ {
 		if param[i] == "created_at" || param[i] == "id" {
 			continue
 		}
 		setParam += param[i] + " = " + placeholder[i] + ", "
 	}
-	setParam += param[n] + " = " + placeholder[n]
+	setParam = strings.TrimSuffix(setParam, ", ")
 	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = %d", item.GetNameDB(), setParam, id)
 	fmt.Println(query)
 	result, err := db.Exec(query, item.GetValues()...)
